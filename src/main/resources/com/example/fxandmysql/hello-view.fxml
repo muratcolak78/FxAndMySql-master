@@ -44,16 +44,13 @@
                            </cursor>
                         </Button>
                         <TextField fx:id="textFieldAdd" layoutX="197.0" layoutY="445.0" prefHeight="25.0" prefWidth="260.0" promptText="write your item Separate data with &quot;,&quot;" />
-                        <Button fx:id="buttonAdd" layoutX="494.0" layoutY="445.0" mnemonicParsing="false" onAction="#addItem" prefHeight="25.0" prefWidth="64.0" text="Add" />
-                        <TextField fx:id="textFieldFindItem" layoutX="196.0" layoutY="380.0" prefHeight="25.0" prefWidth="262.0" promptText="type the name to search" />
-                        <Button fx:id="butoonFindItems" layoutX="493.0" layoutY="380.0" mnemonicParsing="false" onAction="#findItem" prefHeight="25.0" prefWidth="65.0" text="Find" />
+                        <Button fx:id="buttonAdd" layoutX="494.0" layoutY="445.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="64.0" text="Add" />
                         <TextField fx:id="url" layoutX="27.0" layoutY="15.0" prefHeight="25.0" prefWidth="163.0" promptText="write database url" />
                         <TextField fx:id="username" layoutX="196.0" layoutY="16.0" prefHeight="25.0" prefWidth="160.0" promptText="username" />
                         <PasswordField fx:id="password" layoutX="362.0" layoutY="15.0" prefHeight="25.0" prefWidth="163.0" promptText="password" />
                         <TextField fx:id="textFieldShowTableContents" editable="false" layoutX="362.0" layoutY="75.0" prefHeight="25.0" prefWidth="164.0" />
                         <Button fx:id="buttonShowTableContents" layoutX="537.0" layoutY="75.0" mnemonicParsing="false" onAction="#getTableContents" prefHeight="25.0" prefWidth="159.0" text="Show Table Contents " />
-                        <TextArea fx:id="textAreaTableContents" editable="false" layoutX="196.0" layoutY="115.0" prefHeight="255.0" prefWidth="501.0" />
-                        <TextField fx:id="textFieldFound" layoutX="197.0" layoutY="413.0" prefHeight="25.0" prefWidth="364.0" />
+                        <TextArea fx:id="textAreaTableContents" editable="false" layoutX="196.0" layoutY="115.0" prefHeight="322.0" prefWidth="501.0" />
                      </children>
                   </AnchorPane>
             </content>
@@ -84,7 +81,7 @@
                         <TextField fx:id="textFiledValue9" editable="false" layoutX="106.0" layoutY="374.0" />
                         <Label fx:id="labelColumn8" layoutX="27.0" layoutY="339.0" prefHeight="24.0" prefWidth="64.0" />
                         <TextField fx:id="textFiledValue8" editable="false" layoutX="106.0" layoutY="339.0" />
-                        <Button fx:id="buttonAdd2" layoutX="203.0" layoutY="416.0" mnemonicParsing="false" onAction="#addItem2" prefHeight="25.0" prefWidth="51.0" text="Add" />
+                        <Button fx:id="buttonAdd2" layoutX="203.0" layoutY="416.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="51.0" text="Add2" />
                         <Label fx:id="labelKayitDurumu" layoutX="344.0" layoutY="29.0" prefHeight="17.0" prefWidth="230.0">
                            <font>
                               <Font name="System Bold" size="18.0" />
@@ -119,10 +116,22 @@
                         <TextField fx:id="textFiledValue91" editable="false" layoutX="106.0" layoutY="374.0" />
                         <Label fx:id="labelColumn81" layoutX="27.0" layoutY="339.0" prefHeight="24.0" prefWidth="64.0" />
                         <TextField fx:id="textFiledValue81" editable="false" layoutX="106.0" layoutY="339.0" />
-                        <Button fx:id="buttonAdd21" layoutX="203.0" layoutY="416.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="51.0" text="Update" />
+                        <Button fx:id="buttonUpdate" layoutX="178.0" layoutY="416.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="76.0" text="Update" />
                         <Label fx:id="labelKayitDurumu1" layoutX="344.0" layoutY="29.0" prefHeight="17.0" prefWidth="230.0">
                            <font>
                               <Font name="System Bold" size="18.0" />
+                           </font>
+                        </Label>
+                        <TextArea fx:id="textAreaTableContents1" editable="false" layoutX="272.0" layoutY="12.0" prefHeight="204.0" prefWidth="419.0" />
+                        <TextField fx:id="textFieldFindItem" layoutX="272.0" layoutY="243.0" prefHeight="25.0" prefWidth="262.0" promptText="type the name to search" />
+                        <Button fx:id="butoonFindItems" layoutX="542.0" layoutY="243.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="65.0" text="Find" />
+                        <TextField fx:id="textFieldFound" layoutX="272.0" layoutY="279.0" prefHeight="25.0" prefWidth="364.0" />
+                        <TextField fx:id="textFieldgetItemWithName" layoutX="270.0" layoutY="317.0" prefHeight="25.0" prefWidth="263.0" />
+                        <Button fx:id="buttonGetIt" layoutX="547.0" layoutY="317.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="67.0" text="Get It" />
+                        <Button fx:id="buttonDelete" layoutX="106.0" layoutY="416.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="67.0" text="Delete" />
+                        <Label fx:id="labelNotification" alignment="CENTER" contentDisplay="CENTER" layoutX="272.0" layoutY="378.0" prefHeight="17.0" prefWidth="363.0" textFill="#d02727">
+                           <font>
+                              <Font size="18.0" />
                            </font>
                         </Label>
                      </children>

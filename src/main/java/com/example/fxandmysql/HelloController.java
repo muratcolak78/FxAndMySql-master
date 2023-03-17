@@ -29,19 +29,19 @@ public class HelloController {
     public Label labelDatabase, labelTable, labelDatabase1, labelTable1, labelDatabase11, labelTable11, labelColumn1, labelColumn2,
             labelColumn3, labelColumn4, labelColumn5, labelColumn6, labelColumn7, labelColumn8, labelColumn9, labelKayitDurumu,
             showUsernameLabel, labelColumn11, labelColumn21,
-            labelColumn31, labelColumn41, labelColumn51, labelColumn61, labelColumn71, labelColumn81, labelColumn91;
+            labelColumn31, labelColumn41, labelColumn51, labelColumn61, labelColumn71, labelColumn81, labelColumn91,labelNotification;
     @FXML
     public TextField textFieldAdd, textFieldFindItem, textFieldFound, textFieldShowTableContents,
             textFiledValue1, textFiledValue2, textFiledValue3, textFiledValue4, textFiledValue5,
             textFiledValue6, textFiledValue7, textFiledValue8, textFiledValue9,
             textFiledValue11, textFiledValue21, textFiledValue31, textFiledValue41, textFiledValue51,
             textFiledValue61, textFiledValue71, textFiledValue81, textFiledValue91, url, username,
-            password, inputTableName;
+            password, inputTableName, textFieldgetItemWithName;
     @FXML
-    public Button buttonAdd, butoonFindItems, buttonAdd2;
+    public Button buttonAdd, butoonFindItems, buttonAdd2, buttonGetIt, buttonUpdate, buttonDelete;
 
     @FXML
-    public TextArea textArea, textAreaTableContents;
+    public TextArea textArea, textAreaTableContents, textAreaTableContents1;
 
     @FXML
     private List<String> tables = new ArrayList<>();
@@ -59,6 +59,7 @@ public class HelloController {
     @FXML
     public void getDatabase() throws SQLException {
         textAreaTableContents.setText("");
+        textAreaTableContents1.setText("");
 
         database = new ArrayList<>();
 
@@ -70,15 +71,14 @@ public class HelloController {
         this.USERNAME = "root";
         this.PASSWORD = "M974202m.";
 
-        DatabaseConnection connectNow = new DatabaseConnection();
-        Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
+
         ResultSet queryOutPut = null;
         String coonectQuery = "SHOW DATABASES;";
 
 
         try {
             System.out.println("uğraştık");
-            Statement statement = connectDB.createStatement();
+            Statement statement = DBConnection().createStatement();
             System.out.println("statement oluşturuldu");
             queryOutPut = statement.executeQuery(coonectQuery);
             System.out.println("Connected to the database.");
@@ -106,7 +106,7 @@ public class HelloController {
             System.out.println(database);
             textArea.setText(text2);
 
-            connectDB.close();
+            DBConnection().close();
 
 
         } catch (SQLException e) {
@@ -117,6 +117,7 @@ public class HelloController {
     @FXML
     public void getDatabaseTables() {
         textAreaTableContents.setText("");
+        textAreaTableContents1.setText("");
 
         String dataBase = inputTableName.getText();
 
@@ -128,12 +129,10 @@ public class HelloController {
 
         } else {
 
-            DatabaseConnection connectNow = new DatabaseConnection();
-            Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
             String coonectQuery = "SHOW TABLES FROM " + dataBase + ";";
 
             try {
-                Statement statement = connectDB.createStatement();
+                Statement statement = DBConnection().createStatement();
                 ResultSet queryOutPut = statement.executeQuery(coonectQuery);
                 String text = "";
                 String text2 = "";
@@ -153,7 +152,7 @@ public class HelloController {
 
 
                 System.out.println(text2);
-                connectDB.close();
+                DBConnection().close();
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -166,6 +165,7 @@ public class HelloController {
     public void getTableContents() {
 
         textAreaTableContents.setText("");
+        textAreaTableContents1.setText("");
         String databaseName = inputTableName.getText();
         String tablename = textFieldShowTableContents.getText();
 
@@ -177,12 +177,10 @@ public class HelloController {
             showUsernameLabel.setText(" lütfen geçerli bir tablo seçiniz");
         } else {
             getcolumnsNameList(databaseName, tablename);
-            DatabaseConnection connectNow = new DatabaseConnection();
-            Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
             String coonectQuery = "select * from " + databaseName + "." + tablename;
 
             try {
-                Statement statement = connectDB.createStatement();
+                Statement statement = DBConnection().createStatement();
                 ResultSet queryOutPut = statement.executeQuery(coonectQuery);
                 String text = "";
                 String text2 = makeColumName(columnNames) + "\n";
@@ -191,6 +189,7 @@ public class HelloController {
                     text = makeText2(queryOutPut, columsNumber);
                     text2 += text + "\n";
                     textAreaTableContents.setText(text2);
+                    textAreaTableContents1.setText(text2);
                 }
 
 
@@ -219,7 +218,7 @@ public class HelloController {
                 System.out.println(text2);
                 System.out.println(tablename + " " + jokerColumnName);
                 System.out.println(tablename + " " + jokerColumnName);
-                connectDB.close();
+                DBConnection().close();
 
             } catch (SQLException e) {
                 throw new RuntimeException(e);
@@ -229,17 +228,244 @@ public class HelloController {
         showUsernameLabel.setText("");
 
     }
+    @FXML
+    public void allActions(ActionEvent event) throws SQLException {
+        String action=((Button) event.getSource()).getText();
+        switch (action){
+            case "Find":findItem();break;
+            case "Get It": getItem();break;
+            case "Update":updateItem();break;
+            case "Delete":deleteItem();break;
+            case "Add2":addItem2();break;
+            case "Add":addItem();break;
+        }
 
 
+    }
+
+    @FXML
+    public void addItem() {
+
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+        String addFiled = textFieldAdd.getText();
+
+
+        if (databaseName.isEmpty() || tablename.isEmpty()) {
+            showUsernameLabel.setText("database ve tablo bilgileri eksik olamaz!!");
+        } else if (!database.contains(databaseName) || !tables.contains(tablename)) {
+            showUsernameLabel.setText("database veya tablo bilgileri hatalı!!");
+        } else if (addFiled.isEmpty()) {
+            showUsernameLabel.setText("Lütfen data yazınız!!");
+        } else {
+
+            String columnNames = "(" + makeColumName(jokerColumnName) + ")";
+            String extra = databaseName + "." + tablename + " " + columnNames + " values " + makeValueName(addFiled) + ";";
+            String sqlCode = "INSERT INTO " + extra;
+            System.out.println(sqlCode);
+
+            try {
+                PreparedStatement preparedStatement = DBConnection().prepareStatement(sqlCode);
+                preparedStatement.executeUpdate(sqlCode);
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            jokerColumnNumber = 0;
+            jokerColumnName.clear();
+            getTableContents();
+        }
+    }
+
+    @FXML
+    public void addItem2() {
+
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+
+        String columnNames = "(" + makeColumName(jokerColumnName) + ")";
+        String extra = databaseName + "." + tablename + " " + columnNames + " values " + makeValueName(valueMaker()) + ";";
+        String sqlCode = "INSERT INTO " + extra;
+        System.out.println(sqlCode);
+
+        try {
+            PreparedStatement preparedStatement = DBConnection().prepareStatement(sqlCode);
+            preparedStatement.executeUpdate(sqlCode);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        jokerColumnNumber = 0;
+        jokerColumnName.clear();
+        for (int i = 0; i < listTextFieldColumns.size(); i++) {
+            listTextFieldColumns.get(i).setText("");
+        }
+        labelNotification.setText("Kayıt Eklendi");
+        getTableContents();
+
+    }
+    @FXML
+    public void findItem() throws SQLException {
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+        String findItem = textFieldFindItem.getText();
+        System.out.println(findItem);
+        getcolumnsNameList(databaseName, tablename);
+
+        String x = "select * from " + databaseName + "." + tablename + " where " + columnNames.get(1) + " like '" + findItem + "%';";
+        String sql3 = "SELECT " + jokerColumnName.get(0) + "," + jokerColumnName.get(1) + "," + jokerColumnName.get(2) + " FROM " + databaseName + "." + tablename + "  WHERE '" + textFieldFindItem.getText() + "%';";
+        System.out.println(x);
+
+        try {
+            Statement statement = DBConnection().prepareStatement(x);
+            ResultSet queryOutPut = statement.executeQuery(x);
+
+            String text = "";
+            String text2 = "";
+
+            showUsernameLabel.setText(" bulundu");
+            try {
+                while (queryOutPut.next()) {
+                    text =
+                            queryOutPut.getString(1) + "  " +
+                                    queryOutPut.getString(2) + "  " +
+                                    queryOutPut.getString(3);
+                    text2 += text + "\n";
+
+                }
+
+                while (queryOutPut.next()) {
+
+
+                }
+                textFieldFound.setText(text);
+                popupWindow(text2);
+                textAreaTableContents1.setText(text2);
+                System.out.println(text);
+                labelNotification.setText("Kişiler Bulundu");
+            } catch (Exception e) {
+                labelNotification.setText("Kişiler Bulunamadı");
+            }
+
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+    @FXML
+    public void getItem() {
+
+        for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
+            listTextFieldUpdatePage.get(i).setText("");
+        }
+
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+        String getItem = textFieldgetItemWithName.getText();
+        System.out.println(getItem);
+        getcolumnsNameList(databaseName, tablename);
+
+        String x = "select * from " + databaseName + "." + tablename + " where " + columnNames.get(0) + " = " + Integer.valueOf(getItem) + ";";
+        System.out.println("--------" + columnNames.get(0) + " " + getItem);
+        System.out.println(x);
+
+        try {
+            Statement statement = DBConnection().prepareStatement(x);
+            ResultSet queryOutPut = statement.executeQuery(x);
+
+
+            String text = "";
+            String[] text2;
+            try {
+                while (queryOutPut.next()) {
+                    for (int i = 0; i < jokerColumnNumber; i++) {
+                        text += queryOutPut.getString(jokerColumnName.get(i)) + " ";
+                        System.out.println(text);
+                    }
+                }
+
+                text2 = text.split(" ");
+                for (int i = 0; i < jokerColumnNumber; i++) {
+                    listTextFieldUpdatePage.get(i).setText(text2[i]);
+                }
+
+
+            } catch (Exception e) {
+                labelNotification.setText("Kayıt getirilemedi");
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
+        }
+        System.out.println(makeUpdateCode());
+        labelNotification.setText("Kayıt getirildi");
+
+
+    }
+
+    @FXML
+    public void updateItem() {
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+
+        String sqlCode = "UPDATE " + databaseName + "." + tablename + " SET " + makeUpdateCode() + " WHERE " + jokerColumnName.get(0) + "=" + listTextFieldUpdatePage.get(0).getText() + ";";
+        System.out.println(sqlCode);
+
+        try {
+            PreparedStatement preparedStatement = DBConnection().prepareStatement(sqlCode);
+            preparedStatement.executeUpdate(sqlCode);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        jokerColumnNumber = 0;
+        jokerColumnName.clear();
+        for (int i = 0; i < listTextFieldColumns.size(); i++) {
+            listTextFieldColumns.get(i).setText("");
+        }
+        getTableContents();
+        labelNotification.setText("Kayıt güncellendi");
+
+    }
+
+    public void deleteItem() {
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+
+        //String sqlCode = "UPDATE " + databaseName + "." + tablename + " SET " + makeUpdateCode() + " WHERE " + jokerColumnName.get(0) + "=" + listTextFieldUpdatePage.get(0).getText() + ";";
+        //System.out.println(sqlCode);
+        String sqlCode2 = "DELETE FROM " + databaseName + "." + tablename + " WHERE " + jokerColumnName.get(0) + "=" + listTextFieldUpdatePage.get(0).getText() + ";";
+        try {
+            PreparedStatement preparedStatement = DBConnection().prepareStatement(sqlCode2);
+            preparedStatement.executeUpdate(sqlCode2);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        jokerColumnNumber = 0;
+        jokerColumnName.clear();
+        for (int i = 0; i < listTextFieldColumns.size(); i++) {
+            listTextFieldColumns.get(i).setText("");
+        }
+        getTableContents();
+        for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
+            listTextFieldUpdatePage.get(i).setText("");
+        }
+        labelNotification.setText("Kayıt silindi");
+
+    }
     @FXML
     public void getcolumnsNameList(String databaseName, String tablename) {
         columnNames = new ArrayList<>();
-        DatabaseConnection connectNow = new DatabaseConnection();
-        Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
         String coonectQuery = "show COLUMNS FROM " + databaseName + "." + tablename + ";";
 
         try {
-            Statement statement = connectDB.createStatement();
+            Statement statement = DBConnection().createStatement();
             ResultSet queryOutPut = statement.executeQuery(coonectQuery);
             String text = "";
             String text2 = "";
@@ -266,73 +492,6 @@ public class HelloController {
             text += "  " + queryOutPut.getString(i);
         }
         return text;
-    }
-
-    @FXML
-    public void addItem() {
-
-        String databaseName = inputTableName.getText();
-        String tablename = textFieldShowTableContents.getText();
-        String addFiled = textFieldAdd.getText();
-
-
-        if (databaseName.isEmpty() || tablename.isEmpty()) {
-            showUsernameLabel.setText("database ve tablo bilgileri eksik olamaz!!");
-        } else if (!database.contains(databaseName) || !tables.contains(tablename)) {
-            showUsernameLabel.setText("database veya tablo bilgileri hatalı!!");
-        } else if (addFiled.isEmpty()) {
-            showUsernameLabel.setText("Lütfen data yazınız!!");
-        } else {
-
-
-            DatabaseConnection connectNow = new DatabaseConnection();
-            Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
-            String columnNames = "(" + makeColumName(jokerColumnName) + ")";
-            String extra = databaseName + "." + tablename + " " + columnNames + " values " + makeValueName(addFiled) + ";";
-            String sqlCode = "INSERT INTO " + extra;
-            System.out.println(sqlCode);
-
-            try {
-                PreparedStatement preparedStatement = connectDB.prepareStatement(sqlCode);
-                preparedStatement.executeUpdate(sqlCode);
-
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            jokerColumnNumber = 0;
-            jokerColumnName.clear();
-            getTableContents();
-        }
-    }
-
-    @FXML
-    public void addItem2() {
-
-        String databaseName = inputTableName.getText();
-        String tablename = textFieldShowTableContents.getText();
-
-        DatabaseConnection connectNow = new DatabaseConnection();
-        Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
-        String columnNames = "(" + makeColumName(jokerColumnName) + ")";
-        String extra = databaseName + "." + tablename + " " + columnNames + " values " + makeValueName(valueMaker()) + ";";
-        String sqlCode = "INSERT INTO " + extra;
-        System.out.println(sqlCode);
-
-        try {
-            PreparedStatement preparedStatement = connectDB.prepareStatement(sqlCode);
-            preparedStatement.executeUpdate(sqlCode);
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        jokerColumnNumber = 0;
-        jokerColumnName.clear();
-        for (int i = 0; i < listTextFieldColumns.size(); i++) {
-            listTextFieldColumns.get(i).setText("");
-        }
-        labelKayitDurumu.setText("Kayıt eklendi");
-        getTableContents();
-
     }
 
     public String makeColumName(List<String> nameList) {
@@ -378,58 +537,7 @@ public class HelloController {
         return value + ")";
     }
 
-    @FXML
-    public void findItem() throws SQLException {
-        String databaseName = inputTableName.getText();
-        String tablename = textFieldShowTableContents.getText();
-        String findItem = textFieldFindItem.getText();
-        System.out.println(findItem);
-        getcolumnsNameList(databaseName, tablename);
 
-        DatabaseConnection connectNow = new DatabaseConnection();
-        Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
-
-        String x = "select * from " + databaseName + "." + tablename + " where " + columnNames.get(1) + " like '" + findItem + "%';";
-        String sql3 = "SELECT " + jokerColumnName.get(0) + "," + jokerColumnName.get(1) + "," + jokerColumnName.get(2) + " FROM " + databaseName + "." + tablename + "  WHERE '" + textFieldFindItem.getText() + "%';";
-        System.out.println(x);
-
-        try {
-            Statement statement = connectDB.prepareStatement(x);
-            ResultSet queryOutPut = statement.executeQuery(x);
-
-            String text = "";
-            String text2 = "";
-
-            showUsernameLabel.setText(" bulundu");
-            try {
-                while (queryOutPut.next()) {
-                    text =
-                            queryOutPut.getString(1) + "  " +
-                                    queryOutPut.getString(2) + "  " +
-                                    queryOutPut.getString(3);
-                    text2 += text+"\n";
-
-                }
-
-                while (queryOutPut.next()) {
-
-
-                }
-                textFieldFound.setText(text);
-                popupWindow(text2);
-                System.out.println(text);
-            } catch (Exception e) {
-                textFieldFound.setText("Şahıs bulunamadı");
-            }
-
-
-        } catch (SQLException e) {
-            System.out.println(e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-
-    }
 
     public void makeAddPaneValueName() {
 
@@ -473,6 +581,7 @@ public class HelloController {
     }
 
     public void setTextFielValue(int number) {
+
 
         listTextFieldColumns = new ArrayList<>();
         listTextFieldUpdatePage = new ArrayList<>();
@@ -518,42 +627,15 @@ public class HelloController {
         return values;
     }
 
-    public void updateItem() {
-        String databaseName = inputTableName.getText();
-        String tablename = textFieldShowTableContents.getText();
-
-        DatabaseConnection connectNow = new DatabaseConnection();
-        Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
-        String columnNames = "(" + makeColumName(jokerColumnName) + ")";
-        String extra = databaseName + "." + tablename + " " + columnNames + " values " + makeValueName(valueMaker()) + ";";
-        String sqlCode = "INSERT INTO " + extra;
-        System.out.println(sqlCode);
-
-        try {
-            PreparedStatement preparedStatement = connectDB.prepareStatement(sqlCode);
-            preparedStatement.executeUpdate(sqlCode);
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        jokerColumnNumber = 0;
-        jokerColumnName.clear();
-        for (int i = 0; i < listTextFieldColumns.size(); i++) {
-            listTextFieldColumns.get(i).setText("");
-        }
-        labelKayitDurumu.setText("Kayıt eklendi");
-        getTableContents();
-
-    }
 
     @FXML
     public void popupWindow(String text) {
         Stage popup = new Stage();
         popup.setTitle(".........");
         popup.initModality(Modality.APPLICATION_MODAL);
-        Pane pane=new Pane();
+        Pane pane = new Pane();
         //VBox popupVbox = new VBox(20);
-        TextArea textArea1=new TextArea();
+        TextArea textArea1 = new TextArea();
         //popupVbox.getChildren().add(textArea1);
         pane.getChildren().add(textArea1);
         textArea1.setEditable(false);
@@ -565,23 +647,44 @@ public class HelloController {
         popup.show();
 
     }
-   /* public void popupWindow(String text) {
-        Stage dialog = new Stage();
-        dialog.setTitle(" warning ");
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        VBox dialogVbox = new VBox(20);
-        //Label label=new Label();
-        TextArea textArea1=new TextArea();
-        //dialogVbox.getChildren().add(new Text(text));
-        //dialogVbox.getChildren().add(label);
-        dialogVbox.getChildren().add(textArea1);
-        //label.setText("deneme");
-        textArea1.setText(text);
-        Scene dialogScene = new Scene(dialogVbox, 300, 300);
-        dialog.setScene(dialogScene);
-        dialog.show();
 
-    }*/
+    /* public void popupWindow(String text) {
+         Stage dialog = new Stage();
+         dialog.setTitle(" warning ");
+         dialog.initModality(Modality.APPLICATION_MODAL);
+         VBox dialogVbox = new VBox(20);
+         //Label label=new Label();
+         TextArea textArea1=new TextArea();
+         //dialogVbox.getChildren().add(new Text(text));
+         //dialogVbox.getChildren().add(label);
+         dialogVbox.getChildren().add(textArea1);
+         //label.setText("deneme");
+         textArea1.setText(text);
+         Scene dialogScene = new Scene(dialogVbox, 300, 300);
+         dialog.setScene(dialogScene);
+         dialog.show();
+
+     }*/
+    public String makeUpdateCode() {
+
+        String text = jokerColumnName.get(1) + "='" + listTextFieldUpdatePage.get(1).getText() + "'";
+
+        for (int i = 2; i < jokerColumnNumber; i++) {
+            text += ", " + jokerColumnName.get(i) + "= '" + listTextFieldUpdatePage.get(i).getText() + "'";
+        }
+        return text;
+    }
+
+
+
+    public Connection DBConnection() {
+        DatabaseConnection connectNow = new DatabaseConnection();
+        Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
+        return connectDB;
+    }
+
+
+
 }
 
 
