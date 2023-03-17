@@ -63,13 +63,10 @@ public class HelloController {
 
         database = new ArrayList<>();
 
-        /*this.URL = url.getText();
+        this.URL = url.getText();
         this.USERNAME = username.getText();
-        this.PASSWORD = password.getText();*/
+        this.PASSWORD = password.getText();
 
-        this.URL = "jdbc:mysql://localhost:3306/";
-        this.USERNAME = "root";
-        this.PASSWORD = "M974202m.";
 
 
         ResultSet queryOutPut = null;
