@@ -87,6 +87,7 @@
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Label>
+                        <TextArea fx:id="textAreaTableContents11" editable="false" layoutX="272.0" layoutY="12.0" prefHeight="387.0" prefWidth="419.0" />
                      </children></AnchorPane>
             </content>
           </Tab>
@@ -151,6 +152,8 @@
                               <Font name="System Bold" size="18.0" />
                            </font>
                         </Label>
+                        <Button fx:id="buttonJsonExport" layoutX="27.0" layoutY="78.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="149.0" text="Export Json" />
+                        <Button layoutX="28.0" layoutY="125.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="147.0" text="Export CSV" />
                      </children>
                   </AnchorPane>
                </content>

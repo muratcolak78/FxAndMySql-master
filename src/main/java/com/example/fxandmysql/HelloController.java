@@ -1,27 +1,17 @@
 package com.example.fxandmysql;
 
-
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.collections.ObservableListBase;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
 
 public class HelloController {
 
@@ -29,7 +19,7 @@ public class HelloController {
     public Label labelDatabase, labelTable, labelDatabase1, labelTable1, labelDatabase11, labelTable11, labelColumn1, labelColumn2,
             labelColumn3, labelColumn4, labelColumn5, labelColumn6, labelColumn7, labelColumn8, labelColumn9, labelKayitDurumu,
             showUsernameLabel, labelColumn11, labelColumn21,
-            labelColumn31, labelColumn41, labelColumn51, labelColumn61, labelColumn71, labelColumn81, labelColumn91,labelNotification;
+            labelColumn31, labelColumn41, labelColumn51, labelColumn61, labelColumn71, labelColumn81, labelColumn91, labelNotification;
     @FXML
     public TextField textFieldAdd, textFieldFindItem, textFieldFound, textFieldShowTableContents,
             textFiledValue1, textFiledValue2, textFiledValue3, textFiledValue4, textFiledValue5,
@@ -41,7 +31,7 @@ public class HelloController {
     public Button buttonAdd, butoonFindItems, buttonAdd2, buttonGetIt, buttonUpdate, buttonDelete;
 
     @FXML
-    public TextArea textArea, textAreaTableContents, textAreaTableContents1;
+    public TextArea textArea, textAreaTableContents, textAreaTableContents1, textAreaTableContents11;
 
     @FXML
     private List<String> tables = new ArrayList<>();
@@ -53,20 +43,25 @@ public class HelloController {
     private List<TextField> listTextFieldColumns, listTextFieldUpdatePage;
     @FXML
     private String URL, USERNAME, PASSWORD;
-    public int columsNumber, jokerColumnNumber = 0;
+    //private JSONArray result = new JSONArray();
+    public int columsNumber, jokerColumnNumber, number = 0;
 
 
     @FXML
     public void getDatabase() throws SQLException {
         textAreaTableContents.setText("");
         textAreaTableContents1.setText("");
+        textAreaTableContents11.setText("");
 
         database = new ArrayList<>();
 
-        this.URL = url.getText();
-        this.USERNAME = username.getText();
-        this.PASSWORD = password.getText();
+        this.URL = "jdbc:mysql://localhost:3306/";
+        this.USERNAME = "root";
+        this.PASSWORD = "M974202m.";
 
+        /*this.URL = url.getText();
+        this.USERNAME = username.getText();
+        this.PASSWORD = password.getText();*/
 
 
         ResultSet queryOutPut = null;
@@ -115,6 +110,7 @@ public class HelloController {
     public void getDatabaseTables() {
         textAreaTableContents.setText("");
         textAreaTableContents1.setText("");
+        textAreaTableContents11.setText("");
 
         String dataBase = inputTableName.getText();
 
@@ -163,6 +159,7 @@ public class HelloController {
 
         textAreaTableContents.setText("");
         textAreaTableContents1.setText("");
+        textAreaTableContents11.setText("");
         String databaseName = inputTableName.getText();
         String tablename = textFieldShowTableContents.getText();
 
@@ -187,6 +184,7 @@ public class HelloController {
                     text2 += text + "\n";
                     textAreaTableContents.setText(text2);
                     textAreaTableContents1.setText(text2);
+                    textAreaTableContents11.setText(text2);
                 }
 
 
@@ -225,16 +223,35 @@ public class HelloController {
         showUsernameLabel.setText("");
 
     }
+
     @FXML
     public void allActions(ActionEvent event) throws SQLException {
-        String action=((Button) event.getSource()).getText();
-        switch (action){
-            case "Find":findItem();break;
-            case "Get It": getItem();break;
-            case "Update":updateItem();break;
-            case "Delete":deleteItem();break;
-            case "Add2":addItem2();break;
-            case "Add":addItem();break;
+        String action = ((Button) event.getSource()).getText();
+        switch (action) {
+            case "Find":
+                findItem();
+                break;
+            case "Get It":
+                getItem();
+                break;
+            case "Update":
+                updateItem();
+                break;
+            case "Delete":
+                deleteItem();
+                break;
+            case "Add2":
+                addItem2();
+                break;
+            case "Add":
+                addItem();
+                break;
+            case "Export Json":
+                exportAsJson();
+                break;
+            case "Export CSV":
+                exportAsCSV();
+                break;
         }
 
 
@@ -301,6 +318,7 @@ public class HelloController {
         getTableContents();
 
     }
+
     @FXML
     public void findItem() throws SQLException {
         String databaseName = inputTableName.getText();
@@ -338,6 +356,7 @@ public class HelloController {
                 textFieldFound.setText(text);
                 popupWindow(text2);
                 textAreaTableContents1.setText(text2);
+                textAreaTableContents11.setText(text2);
                 System.out.println(text);
                 labelNotification.setText("Kişiler Bulundu");
             } catch (Exception e) {
@@ -367,12 +386,20 @@ public class HelloController {
         getcolumnsNameList(databaseName, tablename);
 
         String x = "select * from " + databaseName + "." + tablename + " where " + columnNames.get(0) + " = " + Integer.valueOf(getItem) + ";";
+        String x2 = "select * from " + databaseName + "." + tablename + " where " + columnNames.get(1) + " = " + getItem + ";";
+
         System.out.println("--------" + columnNames.get(0) + " " + getItem);
         System.out.println(x);
 
         try {
             Statement statement = DBConnection().prepareStatement(x);
-            ResultSet queryOutPut = statement.executeQuery(x);
+            ResultSet queryOutPut =null;
+            if(columnNames.get(0).equals(null)){
+                queryOutPut = statement.executeQuery(x2);
+            } else{
+                queryOutPut = statement.executeQuery(x);
+            }
+
 
 
             String text = "";
@@ -456,6 +483,76 @@ public class HelloController {
         labelNotification.setText("Kayıt silindi");
 
     }
+
+    public void exportAsJson() {
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+        System.out.println(databaseName);
+
+        String sqlCode2 = makeJsonCode(databaseName, tablename);
+        System.out.println(sqlCode2);
+        try {
+            Statement stmt = DBConnection().createStatement();
+            stmt.executeQuery(sqlCode2);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        jokerColumnNumber = 0;
+        jokerColumnName.clear();
+        for (int i = 0; i < listTextFieldColumns.size(); i++) {
+            listTextFieldColumns.get(i).setText("");
+        }
+        getTableContents();
+        for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
+            listTextFieldUpdatePage.get(i).setText("");
+        }
+        popupWindow("Dosya \nC:/ProgramData/MySQL/MySQL Server 8.0/Uploads \nkonumuna Json olarak export edildi ");
+
+
+    }
+
+    public void exportAsCSV() {
+        number++;
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+        System.out.println(databaseName);
+
+        String csvCode = "SELECT * FROM " + databaseName + "." + tablename + " INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/" + tablename + number + ". csv';";
+        System.out.println(csvCode);
+        try {
+            Statement stmt = DBConnection().createStatement();
+            stmt.executeQuery(csvCode);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        jokerColumnNumber = 0;
+        jokerColumnName.clear();
+        for (int i = 0; i < listTextFieldColumns.size(); i++) {
+            listTextFieldColumns.get(i).setText("");
+        }
+        getTableContents();
+        for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
+            listTextFieldUpdatePage.get(i).setText("");
+        }
+        popupWindow("Dosya \nC:/ProgramData/MySQL/MySQL Server 8.0/Uploads \nkonumuna .csv olarak export edildi ");
+
+
+    }
+
+
+    public String makeJsonCode(String data, String table) {
+        number++;
+        String x = "('" + jokerColumnName.get(0) + "', " + jokerColumnName.get(0);
+        for (int i = 1; i < jokerColumnNumber; i++) {
+            x += ",'" + jokerColumnName.get(i) + "', " + jokerColumnName.get(i);
+        }
+        return "SELECT JSON_ARRAYAGG(JSON_OBJECT " + x + ")) FROM " + data + "." + table + " INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/" + table + number + ".json';";
+
+    }
+
+
     @FXML
     public void getcolumnsNameList(String databaseName, String tablename) {
         columnNames = new ArrayList<>();
@@ -481,6 +578,14 @@ public class HelloController {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public String makeColumnNameList2() {
+        String text = columnNames.get(0);
+        for (int i = 0; i < columnNames.size(); i++) {
+            text += ", " + columnNames.get(i);
+        }
+        return text;
     }
 
     public String makeText2(ResultSet queryOutPut, int number) throws SQLException {
@@ -535,7 +640,6 @@ public class HelloController {
     }
 
 
-
     public void makeAddPaneValueName() {
 
         listLabelColumns = new ArrayList<>();
@@ -568,9 +672,12 @@ public class HelloController {
         }
 
         if (!jokerColumnName.isEmpty()) {
-            for (int i = 1; i < jokerColumnName.size(); i++) {
+            for (int i = 1; i < jokerColumnNumber; i++) {
                 listLabelColumns.get(i - 1).setText(jokerColumnName.get(i));
-                listLabelUpdatePage.get(i - 1).setText(jokerColumnName.get(i - 1));
+
+            }
+            for (int i = 0; i < jokerColumnNumber; i++) {
+                listLabelUpdatePage.get(i).setText(jokerColumnName.get(i));
             }
 
         }
@@ -604,15 +711,20 @@ public class HelloController {
         listTextFieldUpdatePage.add(textFiledValue91);
 
 
-        for (int i = 0; i < listTextFieldColumns.size(); i++) {
+        for (int i = 0; i < jokerColumnNumber; i++) {
             listTextFieldColumns.get(i).setEditable(false);
             listTextFieldUpdatePage.get(i).setEditable(false);
 
         }
         for (int i = 0; i < number - 1; i++) {
             listTextFieldColumns.get(i).setEditable(true);
+
+        }
+        for (int i = 0; i < number; i++) {
+
             listTextFieldUpdatePage.get(i).setEditable(true);
         }
+
 
     }
 
@@ -673,16 +785,74 @@ public class HelloController {
     }
 
 
-
-    public Connection DBConnection() {
+    public Connection DBConnection() throws SQLException {
         DatabaseConnection connectNow = new DatabaseConnection();
         Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
+        connectDB.setAutoCommit(false);
         return connectDB;
     }
 
+   /* public void importCsv() throws ClassNotFoundException {
+
+        String databaseName = inputTableName.getText();
+        String tablename = textFieldShowTableContents.getText();
+        System.out.println(databaseName);
+
+        String csvCode = "SELECT * FROM " + databaseName + "." + tablename + " INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/" + tablename + number + ". csv';";
+        System.out.println(csvCode);
+        try {
+            Statement stmt = DBConnection().createStatement();
+            stmt.executeQuery(csvCode);
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        jokerColumnNumber = 0;
+        jokerColumnName.clear();
+        for (int i = 0; i < listTextFieldColumns.size(); i++) {
+            listTextFieldColumns.get(i).setText("");
+        }
+        getTableContents();
+        for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
+            listTextFieldUpdatePage.get(i).setText("");
+        }
+        popupWindow("Dosya \nC:/ProgramData/MySQL/MySQL Server 8.0/Uploads \nkonumuna .csv olarak export edildi ");
 
 
-}
+       /* try {
+
+            PreparedStatement pstm = null;
+            FileInputStream input = new FileInputStream("/Users/User/Desktop/Email/Test.csv");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+            String row = reader.readLine();
+            String text = row.split(";")[0];
+            String price = row.split(";")[1];
+            reader.close();
+
+            String sql = "INSERT INTO testtable (text, price) VALUES('" + text + "','" + price + "')";
+            pstm = (PreparedStatement) con.prepareStatement(sql);
+            pstm.execute();
+            System.out.println("Import rows " + i);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        } catch (FileNotFoundException ex) {
+            throw new RuntimeException(ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        con.commit();
+        pstm.close();
+        con.close();
+        input.close();
+        System.out.println("Success import excel to mysql table");
+    } catch(IOException e){
+
+    }*/
+
+
+    }
+
+
 
 
 
