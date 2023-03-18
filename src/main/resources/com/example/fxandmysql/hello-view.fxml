@@ -154,6 +154,8 @@
                         </Label>
                         <Button fx:id="buttonJsonExport" layoutX="27.0" layoutY="78.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="149.0" text="Export Json" />
                         <Button layoutX="28.0" layoutY="125.0" mnemonicParsing="false" onAction="#allActions" prefHeight="25.0" prefWidth="147.0" text="Export CSV" />
+                        <TextField fx:id="fileNameField" layoutX="195.0" layoutY="78.0" prefHeight="25.0" prefWidth="178.0" promptText="write filename" />
+                        <TextField fx:id="fileNameField1" layoutX="195.0" layoutY="125.0" prefHeight="25.0" prefWidth="178.0" promptText="write filename" />
                      </children>
                   </AnchorPane>
                </content>

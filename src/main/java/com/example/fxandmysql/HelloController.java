@@ -26,9 +26,9 @@ public class HelloController {
             textFiledValue6, textFiledValue7, textFiledValue8, textFiledValue9,
             textFiledValue11, textFiledValue21, textFiledValue31, textFiledValue41, textFiledValue51,
             textFiledValue61, textFiledValue71, textFiledValue81, textFiledValue91, url, username,
-            password, inputTableName, textFieldgetItemWithName;
+            password, inputTableName, textFieldgetItemWithName, fileNameField,fileNameField1;
     @FXML
-    public Button buttonAdd, butoonFindItems, buttonAdd2, buttonGetIt, buttonUpdate, buttonDelete;
+    public Button buttonAdd, butoonFindItems, buttonAdd2, buttonGetIt, buttonUpdate, buttonDelete, buttonJsonExport;
 
     @FXML
     public TextArea textArea, textAreaTableContents, textAreaTableContents1, textAreaTableContents11;
@@ -244,10 +244,19 @@ public class HelloController {
                 addItem();
                 break;
             case "Export Json":
-                exportAsJson();
+                if(!fileNameField.getText().isEmpty()){
+                    exportAsJson(fileNameField.getText());
+                }else{
+                    popupWindow("lütfen dosya adını yazınız");
+                }
                 break;
             case "Export CSV":
-                exportAsCSV();
+                if(!fileNameField1.getText().isEmpty()){
+                    exportAsCSV(fileNameField1.getText());
+                }else{
+                    popupWindow("lütfen dosya adını yazınız");
+                }
+
                 break;
         }
 
@@ -274,6 +283,7 @@ public class HelloController {
             String extra = databaseName + "." + tablename + " " + columnNames + " values " + makeValueName(addFiled) + ";";
             String sqlCode = "INSERT INTO " + extra;
             System.out.println(sqlCode);
+
 
             try {
                 PreparedStatement preparedStatement = DBConnection().prepareStatement(sqlCode);
@@ -312,6 +322,7 @@ public class HelloController {
             listTextFieldColumns.get(i).setText("");
         }
         labelNotification.setText("Kayıt Eklendi");
+        textFieldgetItemWithName.setText("");
         getTableContents();
 
     }
@@ -390,13 +401,12 @@ public class HelloController {
 
         try {
             Statement statement = DBConnection().prepareStatement(x);
-            ResultSet queryOutPut =null;
-            if(columnNames.get(0).equals(null)){
+            ResultSet queryOutPut = null;
+            if (columnNames.get(0).equals(null)) {
                 queryOutPut = statement.executeQuery(x2);
-            } else{
+            } else {
                 queryOutPut = statement.executeQuery(x);
             }
-
 
 
             String text = "";
@@ -481,41 +491,44 @@ public class HelloController {
 
     }
 
-    public void exportAsJson() {
+    public void exportAsJson(String fileName) {
+             fileName = fileNameField.getText();
+            String databaseName = inputTableName.getText();
+            String tablename = textFieldShowTableContents.getText();
+            System.out.println(databaseName);
+            Statement stmt = null;
+            String sqlCode2 = makeJsonCode(databaseName, tablename, fileName);
+            System.out.println(sqlCode2);
+            try {
+                stmt = DBConnection().createStatement();
+                stmt.executeQuery(sqlCode2);
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            jokerColumnNumber = 0;
+            jokerColumnName.clear();
+            for (int i = 0; i < listTextFieldColumns.size(); i++) {
+                listTextFieldColumns.get(i).setText("");
+            }
+            getTableContents();
+            for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
+                listTextFieldUpdatePage.get(i).setText("");
+            }
+            String x = "C:/ProgramData/MySQL/\nMySQL Server 8.0/Uploads/" + fileName + ".json";
+            popupWindow("Dosya \n" + x + "\n olarak export edildi ");
+            fileName = "";
+        }
+
+
+
+    public void exportAsCSV(String fileName) {
+        fileName = fileNameField1.getText();
         String databaseName = inputTableName.getText();
         String tablename = textFieldShowTableContents.getText();
         System.out.println(databaseName);
 
-        String sqlCode2 = makeJsonCode(databaseName, tablename);
-        System.out.println(sqlCode2);
-        try {
-            Statement stmt = DBConnection().createStatement();
-            stmt.executeQuery(sqlCode2);
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        jokerColumnNumber = 0;
-        jokerColumnName.clear();
-        for (int i = 0; i < listTextFieldColumns.size(); i++) {
-            listTextFieldColumns.get(i).setText("");
-        }
-        getTableContents();
-        for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
-            listTextFieldUpdatePage.get(i).setText("");
-        }
-        popupWindow("Dosya \nC:/ProgramData/MySQL/MySQL Server 8.0/Uploads \nkonumuna Json olarak export edildi ");
-
-
-    }
-
-    public void exportAsCSV() {
-        number++;
-        String databaseName = inputTableName.getText();
-        String tablename = textFieldShowTableContents.getText();
-        System.out.println(databaseName);
-
-        String csvCode = "SELECT * FROM " + databaseName + "." + tablename + " INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/" + tablename + number + ". csv';";
+        String csvCode = "SELECT * FROM " + databaseName + "." + tablename + " INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/" + fileName+ ". csv';";
         System.out.println(csvCode);
         try {
             Statement stmt = DBConnection().createStatement();
@@ -533,19 +546,19 @@ public class HelloController {
         for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
             listTextFieldUpdatePage.get(i).setText("");
         }
-        popupWindow("Dosya \nC:/ProgramData/MySQL/MySQL Server 8.0/Uploads \nkonumuna .csv olarak export edildi ");
-
-
+        String x = "C:/ProgramData/MySQL/\nMySQL Server 8.0/Uploads/" + fileName + ".csv";
+        popupWindow("Dosya \n" + x + "\n olarak export edildi ");
+        fileName = "";
     }
 
 
-    public String makeJsonCode(String data, String table) {
+    public String makeJsonCode(String data, String table, String fileName) {
         number++;
         String x = "('" + jokerColumnName.get(0) + "', " + jokerColumnName.get(0);
         for (int i = 1; i < jokerColumnNumber; i++) {
             x += ",'" + jokerColumnName.get(i) + "', " + jokerColumnName.get(i);
         }
-        return "SELECT JSON_ARRAYAGG(JSON_OBJECT " + x + ")) FROM " + data + "." + table + " INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/" + table + number + ".json';";
+        return "SELECT JSON_ARRAYAGG(JSON_OBJECT " + x + ")) FROM " + data + "." + table + " INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/" + fileName + ".json';";
 
     }
 
@@ -740,37 +753,20 @@ public class HelloController {
         popup.setTitle(".........");
         popup.initModality(Modality.APPLICATION_MODAL);
         Pane pane = new Pane();
-        //VBox popupVbox = new VBox(20);
+
         TextArea textArea1 = new TextArea();
-        //popupVbox.getChildren().add(textArea1);
+
         pane.getChildren().add(textArea1);
         textArea1.setEditable(false);
         textArea1.usesMirroring();
         textArea1.setText(text);
-        //Scene dialogScene = new Scene(popupVbox, 300, 300);
+
         Scene dialogScene = new Scene(pane, 300, 200);
         popup.setScene(dialogScene);
         popup.show();
 
     }
 
-    /* public void popupWindow(String text) {
-         Stage dialog = new Stage();
-         dialog.setTitle(" warning ");
-         dialog.initModality(Modality.APPLICATION_MODAL);
-         VBox dialogVbox = new VBox(20);
-         //Label label=new Label();
-         TextArea textArea1=new TextArea();
-         //dialogVbox.getChildren().add(new Text(text));
-         //dialogVbox.getChildren().add(label);
-         dialogVbox.getChildren().add(textArea1);
-         //label.setText("deneme");
-         textArea1.setText(text);
-         Scene dialogScene = new Scene(dialogVbox, 300, 300);
-         dialog.setScene(dialogScene);
-         dialog.show();
-
-     }*/
     public String makeUpdateCode() {
 
         String text = jokerColumnName.get(1) + "='" + listTextFieldUpdatePage.get(1).getText() + "'";
@@ -785,69 +781,10 @@ public class HelloController {
     public Connection DBConnection() throws SQLException {
         DatabaseConnection connectNow = new DatabaseConnection();
         Connection connectDB = connectNow.getConnection(URL, USERNAME, PASSWORD);
-        connectDB.setAutoCommit(false);
         return connectDB;
     }
 
-   /* public void importCsv() throws ClassNotFoundException {
-
-        String databaseName = inputTableName.getText();
-        String tablename = textFieldShowTableContents.getText();
-        System.out.println(databaseName);
-
-        String csvCode = "SELECT * FROM " + databaseName + "." + tablename + " INTO OUTFILE 'C:/ProgramData/MySQL/MySQL Server 8.0/Uploads/" + tablename + number + ". csv';";
-        System.out.println(csvCode);
-        try {
-            Statement stmt = DBConnection().createStatement();
-            stmt.executeQuery(csvCode);
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        jokerColumnNumber = 0;
-        jokerColumnName.clear();
-        for (int i = 0; i < listTextFieldColumns.size(); i++) {
-            listTextFieldColumns.get(i).setText("");
-        }
-        getTableContents();
-        for (int i = 0; i < listTextFieldUpdatePage.size(); i++) {
-            listTextFieldUpdatePage.get(i).setText("");
-        }
-        popupWindow("Dosya \nC:/ProgramData/MySQL/MySQL Server 8.0/Uploads \nkonumuna .csv olarak export edildi ");
-
-
-       /* try {
-
-            PreparedStatement pstm = null;
-            FileInputStream input = new FileInputStream("/Users/User/Desktop/Email/Test.csv");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-            String row = reader.readLine();
-            String text = row.split(";")[0];
-            String price = row.split(";")[1];
-            reader.close();
-
-            String sql = "INSERT INTO testtable (text, price) VALUES('" + text + "','" + price + "')";
-            pstm = (PreparedStatement) con.prepareStatement(sql);
-            pstm.execute();
-            System.out.println("Import rows " + i);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        } catch (FileNotFoundException ex) {
-            throw new RuntimeException(ex);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
-        con.commit();
-        pstm.close();
-        con.close();
-        input.close();
-        System.out.println("Success import excel to mysql table");
-    } catch(IOException e){
-
-    }*/
-
-
-    }
+}
 
 
 
